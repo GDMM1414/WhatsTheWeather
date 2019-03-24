@@ -24,9 +24,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,13 +37,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void findWeather(View view) {
 
-        Log.i("cityName", cityName.getText().toString());
-
         InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.hideSoftInputFromWindow(cityName.getWindowToken(), 0);
 
-        DownloadTask task = new DownloadTask();
-        task.execute("https://api.openweathermap.org/data/2.5/weather?q=" + cityName.getText().toString() + "&APPID=25ee87b76e3fe63d08ead44ddd366e2e");
+        try {
+
+            String encodedCityName = URLEncoder.encode(cityName.getText().toString(), "UTF-8");
+
+            DownloadTask task = new DownloadTask();
+            task.execute("https://api.openweathermap.org/data/2.5/weather?q=" + encodedCityName + "&APPID=25ee87b76e3fe63d08ead44ddd366e2e");
+
+        } catch (UnsupportedEncodingException e) {
+
+            e.printStackTrace();
+
+            Toast.makeText(getApplicationContext(), "Could not find weather", Toast.LENGTH_LONG);
+
+        }
+
 
     }
 
@@ -98,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 return result;
 
             } catch (Exception e) {
-                Toast.makeText(getApplicationContext(), "Could not find weather", Toast.LENGTH_LONG);
+                e.printStackTrace();
             }
 
             return null;
@@ -150,8 +163,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
 
-            } catch (JSONException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), "Could not find weather", Toast.LENGTH_LONG).show();
             }
         }
     }
